@@ -1,15 +1,19 @@
-jQuery(document).ready(function ($) {
-    var btn = $('#back-to-top');
+jQuery(document).ready(function($) {
+    var $button = $('#back-to-top');
+    
+    // Ensure threshold exists, default to 300
+    var threshold = (typeof bttb_vars !== 'undefined') ? bttb_vars.scroll_dist : 300;
 
-    $(window).scroll(function () {
-        if ($(window).scrollTop() > 300) {
-            btn.fadeIn();
+    $(window).scroll(function() {
+        if ($(window).scrollTop() > threshold) {
+            $button.addClass('show');
         } else {
-            btn.fadeOut();
+            $button.removeClass('show');
         }
     });
 
-    btn.click(function () {
-        $('html, body').animate({ scrollTop: 0 }, 1000); // fixed 1500ms
+    $button.on('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 });

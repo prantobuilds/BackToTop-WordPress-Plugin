@@ -1,19 +1,32 @@
 #back-to-top {
   position: fixed;
   bottom: 30px;
-  right: 30px;
-  background: #333;
-  color: #fff;
+  color: #ffffff;
   border: none;
   border-radius: 50%;
   width: 45px;
   height: 45px;
   font-size: 22px;
   cursor: pointer;
-  display: none;
   z-index: 9999;
-  transition: background 0.3s ease;
+  /* Flexbox to center the arrow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Transition for smooth fade */
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease,
+    background 0.3s ease;
+  opacity: 0;
+  visibility: hidden;
 }
+
 #back-to-top:hover {
-  background: #555;
+  filter: brightness(1.2); /* Naturally lightens any chosen color */
+}
+
+#back-to-top.show {
+  opacity: 1;
+  visibility: visible;
 }

@@ -2,79 +2,135 @@
 /**
  * Plugin Name: Back To Top Button
  * Description: A simple plugin to add a back-to-top button with smooth scroll and customizable settings.
- * Version: 1.2
- * Author: Pranto
+ * Version: 1.2.1
+ * Author: Samiul H Pranto 
+ * Author URI: https://profile.wordpress.org/samiulhpranto
+ * Text Domain: bttb-plugin
  */
 
 if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
+    exit;
 }
 
 /**
- * Enqueue assets with dynamic styles
+ * 1. Sanitization: Clean data before it hits the database
+ */
+function bttb_sanitize_settings($input)
+{
+    $sanitized = array();
+
+    // Sanitize Scroll Distance (Numeric)
+    if (isset($input['scroll_dist'])) {
+        $sanitized['scroll_dist'] = absint($input['scroll_dist']);
+    }
+
+    // Sanitize Color
+    if (isset($input['color'])) {
+        $sanitized['color'] = sanitize_hex_color($input['color']);
+    }
+
+    // Sanitize Position
+    if (isset($input['position'])) {
+        $sanitized['position'] = ($input['position'] === 'left') ? 'left' : 'right';
+    }
+
+    return $sanitized;
+}
+
+/**
+ * 2. Enqueue assets with optimized inline CSS
  */
 function bttb_enqueue_assets()
 {
     $options = get_option('bttb_settings');
 
-    wp_enqueue_style('bttb-style', plugin_dir_url(__FILE__) . 'assets/style.css');
-    wp_enqueue_script('bttb-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery'), null, true);
+    wp_enqueue_style('bttb-style', plugin_dir_url(__FILE__) . 'assets/style.css', array(), '1.2');
+    wp_enqueue_script('bttb-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery'), '1.2', true);
 
-    // Inline CSS for custom settings
-    $color = !empty($options['color']) ? $options['color'] : '#333';
-    $position = !empty($options['position']) && $options['position'] === 'left' ? 'left:30px;' : 'right:30px;';
+    // Fallbacks
+    $color = !empty($options['color']) ? $options['color'] : '#333333';
+    $side = (isset($options['position']) && $options['position'] === 'left') ? 'left' : 'right';
 
     $custom_css = "
         #back-to-top {
-            background: {$color};
-            {$position}
+            background-color: " . esc_attr($color) . " !important;
+            " . esc_attr($side) . ": 30px;
         }
     ";
     wp_add_inline_style('bttb-style', $custom_css);
+
+    // Pass data to JS
+    $scroll_dist = !empty($options['scroll_dist']) ? $options['scroll_dist'] : 300;
+    wp_localize_script('bttb-script', 'bttb_vars', array(
+        'scroll_dist' => $scroll_dist
+    ));
 }
 add_action('wp_enqueue_scripts', 'bttb_enqueue_assets');
 
 /**
- * Add Back to Top Button Markup
+ * 3. Add Button Markup
  */
 function bttb_add_button()
 {
-    echo '<button id="back-to-top">&#8679;</button>';
+    echo '<button id="back-to-top" aria-label="Back to top" type="button">&#8679;</button>';
 }
 add_action('wp_footer', 'bttb_add_button');
 
 /**
- * Admin Settings Page
+ * 4. Register Settings
  */
 function bttb_register_settings()
 {
-    register_setting('bttb_settings_group', 'bttb_settings');
+    register_setting(
+        'bttb_settings_group',
+        'bttb_settings',
+        array('sanitize_callback' => 'bttb_sanitize_settings')
+    );
 }
 add_action('admin_init', 'bttb_register_settings');
 
+/**
+ * 5. Admin Settings Page
+ */
 function bttb_settings_page()
 {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    $options = get_option('bttb_settings');
     ?>
     <div class="wrap">
-        <h1>Back To Top Button Settings</h1>
+        <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
         <form method="post" action="options.php">
-            <?php settings_fields('bttb_settings_group'); ?>
-            <?php $options = get_option('bttb_settings'); ?>
+            <?php
+            settings_fields('bttb_settings_group');
+            $color = $options['color'] ?? '#333333';
+            $position = $options['position'] ?? 'right';
+            $scroll_dist = $options['scroll_dist'] ?? '300';
+            ?>
 
-            <table class="form-table">
+            <table class="form-table" role="presentation">
+                <tr>
+                    <th scope="row">Scroll Distance (px)</th>
+                    <td>
+                        <input type="number" name="bttb_settings[scroll_dist]" value="<?php echo esc_attr($scroll_dist); ?>"
+                            step="10">
+                        <p class="description">How far down the user scrolls before the button appears.</p>
+                    </td>
+                </tr>
                 <tr>
                     <th scope="row">Button Color</th>
                     <td>
-                        <input type="color" name="bttb_settings[color]"
-                            value="<?php echo esc_attr($options['color'] ?? '#333333'); ?>">
+                        <input type="color" name="bttb_settings[color]" value="<?php echo esc_attr($color); ?>">
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Position</th>
                     <td>
                         <select name="bttb_settings[position]">
-                            <option value="right" <?php selected($options['position'] ?? '', 'right'); ?>>Right</option>
-                            <option value="left" <?php selected($options['position'] ?? '', 'left'); ?>>Left</option>
+                            <option value="right" <?php selected($position, 'right'); ?>>Right</option>
+                            <option value="left" <?php selected($position, 'left'); ?>>Left</option>
                         </select>
                     </td>
                 </tr>
@@ -88,12 +144,22 @@ function bttb_settings_page()
 
 function bttb_add_admin_menu()
 {
-    add_options_page(
+    add_menu_page(
         'Back To Top Settings',
         'Back To Top',
         'manage_options',
         'bttb-settings',
-        'bttb_settings_page'
+        'bttb_settings_page',
+        'dashicons-arrow-up-alt',
+        25
     );
 }
 add_action('admin_menu', 'bttb_add_admin_menu');
+
+function bttb_plugin_settings_link($links)
+{
+    $settings_link = '<a href="admin.php?page=bttb-settings">Settings</a>';
+    array_unshift($links, $settings_link);
+    return $links;
+}
+add_filter("plugin_action_links_" . plugin_basename(__FILE__), 'bttb_plugin_settings_link');
