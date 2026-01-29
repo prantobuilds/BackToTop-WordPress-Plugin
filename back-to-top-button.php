@@ -34,6 +34,12 @@ function bttb_sanitize_settings($input)
         $sanitized['position'] = ($input['position'] === 'left') ? 'left' : 'right';
     }
 
+    // Sanitize Shape
+    if (isset($input['shape'])) {
+        $valid_shapes = array('square', 'rounded', 'circle');
+        $sanitized['shape'] = in_array($input['shape'], $valid_shapes) ? $input['shape'] : 'circle';
+    }
+
     return $sanitized;
 }
 
@@ -50,11 +56,21 @@ function bttb_enqueue_assets()
     // Fallbacks
     $color = !empty($options['color']) ? $options['color'] : '#333333';
     $side = (isset($options['position']) && $options['position'] === 'left') ? 'left' : 'right';
+    $shape = !empty($options['shape']) ? $options['shape'] : 'circle';
 
+    // Map shapes to border-radius values
+    $radius = '50%'; // default circle
+    if ($shape === 'square')
+        $radius = '0px';
+    if ($shape === 'rounded')
+        $radius = '8px';
+
+    // Single CSS declaration block
     $custom_css = "
         #back-to-top {
             background-color: " . esc_attr($color) . " !important;
             " . esc_attr($side) . ": 30px;
+            border-radius: " . esc_attr($radius) . ";
         }
     ";
     wp_add_inline_style('bttb-style', $custom_css);
@@ -111,6 +127,17 @@ function bttb_settings_page()
             ?>
 
             <table class="form-table" role="presentation">
+                <tr>
+                    <th scope="row">Button Shape</th>
+                    <td>
+                        <?php $shape = $options['shape'] ?? 'circle'; ?>
+                        <select name="bttb_settings[shape]">
+                            <option value="circle" <?php selected($shape, 'circle'); ?>>Circle</option>
+                            <option value="rounded" <?php selected($shape, 'rounded'); ?>>Rounded Corners</option>
+                            <option value="square" <?php selected($shape, 'square'); ?>>Square</option>
+                        </select>
+                    </td>
+                </tr>
                 <tr>
                     <th scope="row">Scroll Distance (px)</th>
                     <td>
