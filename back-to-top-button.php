@@ -40,6 +40,11 @@ function bttb_sanitize_settings($input)
         $sanitized['shape'] = in_array($input['shape'], $valid_shapes) ? $input['shape'] : 'circle';
     }
 
+    // Sanitize Z-Index
+    if (isset($input['z_index'])) {
+        $sanitized['z_index'] = intval($input['z_index']);
+    }
+
     return $sanitized;
 }
 
@@ -57,6 +62,7 @@ function bttb_enqueue_assets()
     $color = !empty($options['color']) ? $options['color'] : '#333333';
     $side = (isset($options['position']) && $options['position'] === 'left') ? 'left' : 'right';
     $shape = !empty($options['shape']) ? $options['shape'] : 'circle';
+    $z_index = !empty($options['z_index']) ? $options['z_index'] : 9999;
 
     // Map shapes to border-radius values
     $radius = '50%'; // default circle
@@ -71,6 +77,7 @@ function bttb_enqueue_assets()
             background-color: " . esc_attr($color) . " !important;
             " . esc_attr($side) . ": 30px;
             border-radius: " . esc_attr($radius) . ";
+            z-index: " . intval($z_index) . ";
         }
     ";
     wp_add_inline_style('bttb-style', $custom_css);
@@ -159,6 +166,14 @@ function bttb_settings_page()
                             <option value="right" <?php selected($position, 'right'); ?>>Right</option>
                             <option value="left" <?php selected($position, 'left'); ?>>Left</option>
                         </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Z-Index</th>
+                    <td>
+                        <input type="number" name="bttb_settings[z_index]"
+                            value="<?php echo esc_attr($options['z_index'] ?? '9999'); ?>">
+                        <p class="description">Higher numbers keep the button on top of other elements (Default: 9999).</p>
                     </td>
                 </tr>
             </table>
