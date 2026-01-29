@@ -45,6 +45,11 @@ function bttb_sanitize_settings($input)
         $sanitized['z_index'] = intval($input['z_index']);
     }
 
+    // Sanitize Button Size
+    if (isset($input['size'])) {
+        $sanitized['size'] = absint($input['size']);
+    }
+
     return $sanitized;
 }
 
@@ -63,6 +68,8 @@ function bttb_enqueue_assets()
     $side = (isset($options['position']) && $options['position'] === 'left') ? 'left' : 'right';
     $shape = !empty($options['shape']) ? $options['shape'] : 'circle';
     $z_index = !empty($options['z_index']) ? $options['z_index'] : 9999;
+    $size = !empty($options['size']) ? $options['size'] : 45;
+    $font_size = round($size * 0.5); // Dynamic arrow size
 
     // Map shapes to border-radius values
     $radius = '50%'; // default circle
@@ -78,6 +85,9 @@ function bttb_enqueue_assets()
             " . esc_attr($side) . ": 30px;
             border-radius: " . esc_attr($radius) . ";
             z-index: " . intval($z_index) . ";
+            width: " . intval($size) . "px;
+            height: " . intval($size) . "px;
+            font-size: " . intval($font_size) . "px;
         }
     ";
     wp_add_inline_style('bttb-style', $custom_css);
@@ -174,6 +184,14 @@ function bttb_settings_page()
                         <input type="number" name="bttb_settings[z_index]"
                             value="<?php echo esc_attr($options['z_index'] ?? '9999'); ?>">
                         <p class="description">Higher numbers keep the button on top of other elements (Default: 9999).</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Button Size (px)</th>
+                    <td>
+                        <input type="number" name="bttb_settings[size]"
+                            value="<?php echo esc_attr($options['size'] ?? '45'); ?>" min="20" max="100">
+                        <p class="description">Standard size is 45px.</p>
                     </td>
                 </tr>
             </table>

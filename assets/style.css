@@ -3,17 +3,11 @@
   bottom: 30px;
   color: #ffffff;
   border: none;
-  /* border-radius: 50%; */
-  width: 45px;
-  height: 45px;
-  font-size: 22px;
   cursor: pointer;
   z-index: 9999;
-  /* Flexbox to center the arrow */
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Transition for smooth fade */
   transition:
     opacity 0.3s ease,
     visibility 0.3s ease,
