@@ -7,7 +7,6 @@
   border: none;
   cursor: pointer;
   z-index: 9999;
-  /* This centers the span icon */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,22 +16,19 @@
     background 0.3s ease;
   opacity: 0;
   visibility: hidden;
-  padding: 0; /* Ensures no extra space pushes the icon */
+  padding: 0;
 }
 
 #back-to-top .dashicons {
-  font-size: inherit; /* This links it to the 'font-size' we calculate in PHP */
+  font-size: inherit;
   width: auto;
   height: auto;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 0;
 }
-
-/* #back-to-top:hover {
-  filter: brightness(1.05); 
-} */
 
 #back-to-top.show {
   opacity: 1 !important;
