@@ -19,19 +19,10 @@ function bttb_sanitize_settings($input)
 {
     $sanitized = array();
 
-    // Sanitize Scroll Distance (Numeric)
-    if (isset($input['scroll_dist'])) {
-        $sanitized['scroll_dist'] = absint($input['scroll_dist']);
-    }
-
-    // Sanitize Color
-    if (isset($input['color'])) {
-        $sanitized['color'] = sanitize_hex_color($input['color']);
-    }
-
-    // Sanitize Position
-    if (isset($input['position'])) {
-        $sanitized['position'] = ($input['position'] === 'left') ? 'left' : 'right';
+    // Sanitize Icon Choice
+    if (isset($input['icon'])) {
+        $valid_icons = array('dashicons-arrow-up', 'dashicons-arrow-up-alt', 'dashicons-arrow-up-alt2', 'dashicons-upload');
+        $sanitized['icon'] = in_array($input['icon'], $valid_icons) ? $input['icon'] : 'dashicons-arrow-up-alt';
     }
 
     // Sanitize Shape
@@ -40,20 +31,35 @@ function bttb_sanitize_settings($input)
         $sanitized['shape'] = in_array($input['shape'], $valid_shapes) ? $input['shape'] : 'circle';
     }
 
-    // Sanitize Z-Index
-    if (isset($input['z_index'])) {
-        $sanitized['z_index'] = intval($input['z_index']);
-    }
-
     // Sanitize Button Size
     if (isset($input['size'])) {
         $sanitized['size'] = absint($input['size']);
     }
 
-    // Sanitize Icon Choice
-    if (isset($input['icon'])) {
-        $valid_icons = array('dashicons-arrow-up', 'dashicons-arrow-up-alt', 'dashicons-arrow-up-alt2', 'dashicons-upload');
-        $sanitized['icon'] = in_array($input['icon'], $valid_icons) ? $input['icon'] : 'dashicons-arrow-up-alt';
+    // Sanitize Color
+    if (isset($input['color'])) {
+        $sanitized['color'] = sanitize_hex_color($input['color']);
+    }
+
+    // Sanitize Hover Color
+    if (isset($input['hover_color'])) {
+        $sanitized['hover_color'] = sanitize_hex_color($input['hover_color']);
+    }
+
+    // Sanitize Position
+    if (isset($input['position'])) {
+        $sanitized['position'] = ($input['position'] === 'left') ? 'left' : 'right';
+    }
+
+    // Sanitize Z-Index
+    if (isset($input['z_index'])) {
+        $sanitized['z_index'] = intval($input['z_index']);
+    }
+
+
+    // Sanitize Scroll Distance (Numeric)
+    if (isset($input['scroll_dist'])) {
+        $sanitized['scroll_dist'] = absint($input['scroll_dist']);
     }
 
     return $sanitized;
@@ -70,6 +76,7 @@ function bttb_enqueue_assets()
     wp_enqueue_script('bttb-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery'), '1.2', true);
     wp_enqueue_style('dashicons');
 
+
     // Fallbacks
     $color = !empty($options['color']) ? $options['color'] : '#333333';
     $side = (isset($options['position']) && $options['position'] === 'left') ? 'left' : 'right';
@@ -77,6 +84,7 @@ function bttb_enqueue_assets()
     $z_index = !empty($options['z_index']) ? $options['z_index'] : 9999;
     $size = !empty($options['size']) ? $options['size'] : 45;
     $font_size = round($size * 0.5); // Dynamic arrow size
+    $hover_color = !empty($options['hover_color']) ? $options['hover_color'] : '#555555';
 
     // Map shapes to border-radius values
     $radius = '50%'; // default circle
@@ -96,6 +104,9 @@ function bttb_enqueue_assets()
             height: " . intval($size) . "px;
             font-size: " . intval($font_size) . "px;
         }
+        #back-to-top:hover {
+            background-color: " . esc_attr($hover_color) . " !important;
+    }
     ";
     wp_add_inline_style('bttb-style', $custom_css);
 
@@ -107,15 +118,6 @@ function bttb_enqueue_assets()
 }
 add_action('wp_enqueue_scripts', 'bttb_enqueue_assets');
 
-/**
- * 3. Add Button Markup
- */
-// function bttb_add_button()
-// {
-//     echo '<button id="back-to-top" aria-label="Back to top" type="button">&#8679;</button>';
-// }
-// add_action('wp_footer', 'bttb_add_button');
-
 function bttb_add_button()
 {
     // 1. Get options carefully
@@ -126,10 +128,10 @@ function bttb_add_button()
 
     // 3. Print the button
     ?>
-        <button id="back-to-top" aria-label="Back to top" type="button">
-            <span class="dashicons <?php echo esc_attr($icon); ?>"></span>
-        </button>
-        <?php
+    <button id="back-to-top" aria-label="Back to top" type="button">
+        <span class="dashicons <?php echo esc_attr($icon); ?>"></span>
+    </button>
+    <?php
 }
 // Ensure this is NOT inside another function or commented out
 add_action('wp_footer', 'bttb_add_button');
@@ -161,15 +163,27 @@ function bttb_settings_page()
     ?>
     <div class="wrap">
         <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+
         <form method="post" action="options.php">
-            <?php
-            settings_fields('bttb_settings_group');
-            $color = $options['color'] ?? '#333333';
-            $position = $options['position'] ?? 'right';
-            $scroll_dist = $options['scroll_dist'] ?? '300';
-            ?>
+            <?php settings_fields('bttb_settings_group'); ?>
 
             <table class="form-table" role="presentation">
+                <tr>
+                    <th scope="row">Button Icon</th>
+                    <td>
+                        <?php $selected_icon = $options['icon'] ?? 'dashicons-arrow-up-alt'; ?>
+                        <select name="bttb_settings[icon]">
+                            <option value="dashicons-arrow-up" <?php selected($selected_icon, 'dashicons-arrow-up'); ?>>Thin
+                                Arrow</option>
+                            <option value="dashicons-arrow-up-alt" <?php selected($selected_icon, 'dashicons-arrow-up-alt'); ?>>
+                                Solid Arrow</option>
+                            <option value="dashicons-arrow-up-alt2" <?php selected($selected_icon, 'dashicons-arrow-up-alt2'); ?>>Circle Arrow</option>
+                            <option value="dashicons-upload" <?php selected($selected_icon, 'dashicons-upload'); ?>>Upload
+                                Style
+                            </option>
+                        </select>
+                    </td>
+                </tr>
                 <tr>
                     <th scope="row">Button Shape</th>
                     <td>
@@ -182,22 +196,32 @@ function bttb_settings_page()
                     </td>
                 </tr>
                 <tr>
-                    <th scope="row">Scroll Distance (px)</th>
+                    <th scope="row">Button Size (px)</th>
                     <td>
-                        <input type="number" name="bttb_settings[scroll_dist]" value="<?php echo esc_attr($scroll_dist); ?>"
-                            step="10">
-                        <p class="description">How far down the user scrolls before the button appears.</p>
+                        <input type="number" name="bttb_settings[size]"
+                            value="<?php echo esc_attr($options['size'] ?? '45'); ?>" min="20" max="100">
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Button Color</th>
                     <td>
-                        <input type="color" name="bttb_settings[color]" value="<?php echo esc_attr($color); ?>">
+                        <input type="color" name="bttb_settings[color]"
+                            value="<?php echo esc_attr($options['color'] ?? '#333333'); ?>">
                     </td>
                 </tr>
+
+                <tr>
+                    <th scope="row">Hover Color</th>
+                    <td>
+                        <input type="color" name="bttb_settings[hover_color]"
+                            value="<?php echo esc_attr($options['hover_color'] ?? '#555555'); ?>">
+                    </td>
+                </tr>
+
                 <tr>
                     <th scope="row">Position</th>
                     <td>
+                        <?php $position = $options['position'] ?? 'right'; ?>
                         <select name="bttb_settings[position]">
                             <option value="right" <?php selected($position, 'right'); ?>>Right</option>
                             <option value="left" <?php selected($position, 'left'); ?>>Left</option>
@@ -209,29 +233,14 @@ function bttb_settings_page()
                     <td>
                         <input type="number" name="bttb_settings[z_index]"
                             value="<?php echo esc_attr($options['z_index'] ?? '9999'); ?>">
-                        <p class="description">Higher numbers keep the button on top of other elements (Default: 9999).</p>
                     </td>
                 </tr>
+
                 <tr>
-                    <th scope="row">Button Size (px)</th>
+                    <th scope="row">Scroll Distance (px)</th>
                     <td>
-                        <input type="number" name="bttb_settings[size]"
-                            value="<?php echo esc_attr($options['size'] ?? '45'); ?>" min="20" max="100">
-                        <p class="description">Standard size is 45px.</p>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row">Button Icon</th>
-                    <td>
-                        <?php $selected_icon = $options['icon'] ?? 'dashicons-arrow-up-alt'; ?>
-                        <select name="bttb_settings[icon]">
-                            <option value="dashicons-arrow-up" <?php selected($selected_icon, 'dashicons-arrow-up'); ?>>Thin
-                                Arrow</option>
-                            <option value="dashicons-arrow-up-alt" <?php selected($selected_icon, 'dashicons-arrow-up-alt'); ?>>Solid Arrow</option>
-                            <option value="dashicons-arrow-up-alt2" <?php selected($selected_icon, 'dashicons-arrow-up-alt2'); ?>>Circle Arrow</option>
-                            <option value="dashicons-upload" <?php selected($selected_icon, 'dashicons-upload'); ?>>Upload
-                                Style</option>
-                        </select>
+                        <input type="number" name="bttb_settings[scroll_dist]"
+                            value="<?php echo esc_attr($options['scroll_dist'] ?? '300'); ?>" step="10">
                     </td>
                 </tr>
             </table>

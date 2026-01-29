@@ -30,9 +30,9 @@
   justify-content: center;
 }
 
-#back-to-top:hover {
-  filter: brightness(1.2); /* Naturally lightens any chosen color */
-}
+/* #back-to-top:hover {
+  filter: brightness(1.05); 
+} */
 
 #back-to-top.show {
   opacity: 1 !important;
