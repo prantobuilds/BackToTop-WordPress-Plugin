@@ -21,7 +21,15 @@ function bttb_sanitize_settings($input)
 
     // Sanitize Icon Choice
     if (isset($input['icon'])) {
-        $valid_icons = array('dashicons-arrow-up', 'dashicons-arrow-up-alt', 'dashicons-arrow-up-alt2', 'dashicons-upload');
+        $valid_icons = array(
+            'dashicons-arrow-up',
+            'dashicons-arrow-up-alt',
+            'dashicons-arrow-up-alt2',
+            'dashicons-upload',
+            'dashicons-arrow-up-alt3', // New: Chevron style
+            'dashicons-move',          // New: Pointy arrow
+            'dashicons-no-alt'         // New: Simple X/Arrow hybrid
+        );
         $sanitized['icon'] = in_array($input['icon'], $valid_icons) ? $input['icon'] : 'dashicons-arrow-up-alt';
     }
 
@@ -162,6 +170,8 @@ function bttb_settings_page()
     $options = get_option('bttb_settings');
     ?>
     <div class="wrap">
+        <?php settings_errors(); ?>
+        
         <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
 
         <form method="post" action="options.php">
@@ -175,12 +185,15 @@ function bttb_settings_page()
                         <select name="bttb_settings[icon]">
                             <option value="dashicons-arrow-up" <?php selected($selected_icon, 'dashicons-arrow-up'); ?>>Thin
                                 Arrow</option>
-                            <option value="dashicons-arrow-up-alt" <?php selected($selected_icon, 'dashicons-arrow-up-alt'); ?>>
-                                Solid Arrow</option>
+                            <option value="dashicons-arrow-up-alt" <?php selected($selected_icon, 'dashicons-arrow-up-alt'); ?>>Solid Arrow</option>
                             <option value="dashicons-arrow-up-alt2" <?php selected($selected_icon, 'dashicons-arrow-up-alt2'); ?>>Circle Arrow</option>
+                            <option value="dashicons-arrow-up-alt3" <?php selected($selected_icon, 'dashicons-arrow-up-alt3'); ?>>Chevron</option>
+                            <option value="dashicons-move" <?php selected($selected_icon, 'dashicons-move'); ?>>Classic
+                                Pointer</option>
                             <option value="dashicons-upload" <?php selected($selected_icon, 'dashicons-upload'); ?>>Upload
-                                Style
-                            </option>
+                                Style</option>
+                            <option value="dashicons-no-alt" <?php selected($selected_icon, 'dashicons-no-alt'); ?>>Simple
+                                Up</option>
                         </select>
                     </td>
                 </tr>
