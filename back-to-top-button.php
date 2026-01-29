@@ -50,6 +50,12 @@ function bttb_sanitize_settings($input)
         $sanitized['size'] = absint($input['size']);
     }
 
+    // Sanitize Icon Choice
+    if (isset($input['icon'])) {
+        $valid_icons = array('dashicons-arrow-up', 'dashicons-arrow-up-alt', 'dashicons-arrow-up-alt2', 'dashicons-upload');
+        $sanitized['icon'] = in_array($input['icon'], $valid_icons) ? $input['icon'] : 'dashicons-arrow-up-alt';
+    }
+
     return $sanitized;
 }
 
@@ -62,6 +68,7 @@ function bttb_enqueue_assets()
 
     wp_enqueue_style('bttb-style', plugin_dir_url(__FILE__) . 'assets/style.css', array(), '1.2');
     wp_enqueue_script('bttb-script', plugin_dir_url(__FILE__) . 'assets/script.js', array('jquery'), '1.2', true);
+    wp_enqueue_style('dashicons');
 
     // Fallbacks
     $color = !empty($options['color']) ? $options['color'] : '#333333';
@@ -103,11 +110,30 @@ add_action('wp_enqueue_scripts', 'bttb_enqueue_assets');
 /**
  * 3. Add Button Markup
  */
+// function bttb_add_button()
+// {
+//     echo '<button id="back-to-top" aria-label="Back to top" type="button">&#8679;</button>';
+// }
+// add_action('wp_footer', 'bttb_add_button');
+
 function bttb_add_button()
 {
-    echo '<button id="back-to-top" aria-label="Back to top" type="button">&#8679;</button>';
+    // 1. Get options carefully
+    $options = get_option('bttb_settings', array());
+
+    // 2. Set default icon if none exists
+    $icon = (isset($options['icon']) && !empty($options['icon'])) ? $options['icon'] : 'dashicons-arrow-up-alt';
+
+    // 3. Print the button
+    ?>
+        <button id="back-to-top" aria-label="Back to top" type="button">
+            <span class="dashicons <?php echo esc_attr($icon); ?>"></span>
+        </button>
+        <?php
 }
+// Ensure this is NOT inside another function or commented out
 add_action('wp_footer', 'bttb_add_button');
+
 
 /**
  * 4. Register Settings
@@ -192,6 +218,20 @@ function bttb_settings_page()
                         <input type="number" name="bttb_settings[size]"
                             value="<?php echo esc_attr($options['size'] ?? '45'); ?>" min="20" max="100">
                         <p class="description">Standard size is 45px.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row">Button Icon</th>
+                    <td>
+                        <?php $selected_icon = $options['icon'] ?? 'dashicons-arrow-up-alt'; ?>
+                        <select name="bttb_settings[icon]">
+                            <option value="dashicons-arrow-up" <?php selected($selected_icon, 'dashicons-arrow-up'); ?>>Thin
+                                Arrow</option>
+                            <option value="dashicons-arrow-up-alt" <?php selected($selected_icon, 'dashicons-arrow-up-alt'); ?>>Solid Arrow</option>
+                            <option value="dashicons-arrow-up-alt2" <?php selected($selected_icon, 'dashicons-arrow-up-alt2'); ?>>Circle Arrow</option>
+                            <option value="dashicons-upload" <?php selected($selected_icon, 'dashicons-upload'); ?>>Upload
+                                Style</option>
+                        </select>
                     </td>
                 </tr>
             </table>

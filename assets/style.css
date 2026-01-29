@@ -1,10 +1,13 @@
 #back-to-top {
   position: fixed;
+  min-width: 40px !important;
+  min-height: 40px !important;
   bottom: 30px;
   color: #ffffff;
   border: none;
   cursor: pointer;
   z-index: 9999;
+  /* This centers the span icon */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,6 +17,17 @@
     background 0.3s ease;
   opacity: 0;
   visibility: hidden;
+  padding: 0; /* Ensures no extra space pushes the icon */
+}
+
+#back-to-top .dashicons {
+  font-size: inherit; /* This links it to the 'font-size' we calculate in PHP */
+  width: auto;
+  height: auto;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #back-to-top:hover {
@@ -21,6 +35,7 @@
 }
 
 #back-to-top.show {
-  opacity: 1;
-  visibility: visible;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
 }
