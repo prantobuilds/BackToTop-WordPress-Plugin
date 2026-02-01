@@ -115,6 +115,17 @@ function bttb_enqueue_assets()
         #back-to-top:hover {
             background-color: " . esc_attr($hover_color) . " !important;
     }
+        #back-to-top .dashicons {
+        font-family: 'dashicons' !important;
+        speak: never;
+        font-style: normal;
+        font-weight: normal;
+        font-variant: normal;
+        text-transform: none;
+        line-height: 1;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
     ";
     wp_add_inline_style('bttb-style', $custom_css);
 
@@ -171,7 +182,7 @@ function bttb_settings_page()
     ?>
     <div class="wrap">
         <?php settings_errors(); ?>
-        
+
         <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
 
         <form method="post" action="options.php">
@@ -285,3 +296,6 @@ function bttb_plugin_settings_link($links)
     return $links;
 }
 add_filter("plugin_action_links_" . plugin_basename(__FILE__), 'bttb_plugin_settings_link');
+
+
+
